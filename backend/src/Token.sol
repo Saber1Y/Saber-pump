@@ -15,7 +15,7 @@ contract Token is ERC20 {
         // @param: _symbol is the symbol of the token
         // @param: _totalSupply is the total supply of the token
         
-        require(_totalSupply >= 1e18, "Token total supply cannot be 0");
+        require(_totalSupply >= 1 ether, "Token total supply cannot be 0");
         
         OWNER = payable(msg.sender);
         _mint(msg.sender, _totalSupply);
