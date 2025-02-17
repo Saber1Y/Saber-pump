@@ -11,7 +11,6 @@ error AmountToLow();  // Error when the purchase amount is too small
 error AmountToHigh();  // Error when the purchase amount exceeds the allowed limit
 error TargetNotReached();  // Error when the target has not been reached during the token sale
 error NotAuthorized();  // Error for when the sender isn't authorized (e.g., not the owner)
-error TokenNotListed();  // Error when a token is not listed for sale
 error InsufficientContractBalance();  // Error when the contract doesn't have enough ETH to withdraw
 
 contract FactoryContract {
