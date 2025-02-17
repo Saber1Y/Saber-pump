@@ -10,6 +10,8 @@ error AmountToLow();
 error AmountToHigh();
 error TargetNotReached();
 error NotAuthorized();
+error TokenNotListed();
+error InsufficientContractBalance();
 
 contract FactoryContract {
     uint256 public constant TARGET = 3 ether;
@@ -65,7 +67,7 @@ contract FactoryContract {
         string memory _description
     ) public payable {
 
-        if (msg.value <= 0) {
+        if (msg.value != listingFee) {
             revert ListingFeerequired();
         }
         //Allow creation of tokens through token instanciation
@@ -96,7 +98,7 @@ contract FactoryContract {
         // require(msg.value >= _amount, "Insufficient funds");
         TokenSale storage sale = tokenToSale[_token];
 
-        if (sale.isOpen != true) {
+        if (!sale.isOpen) {
             revert SaleIsClosed();
         }
 
@@ -110,7 +112,7 @@ contract FactoryContract {
 
         uint256 cost = getCostPrice(sale.sold);
 
-        uint256 price = cost * (_amount / (10 ** 18));
+        uint256 price = cost * (_amount / 1 ether);
 
         if (msg.value < price) {
             revert InsufficientFunds();
@@ -130,6 +132,10 @@ contract FactoryContract {
 
     function DepositToken(address _token, string memory _name, string memory _symbol) public nonReentrant {
         Token token = new Token(_name, _symbol, 1_000_000 ether);
+        if (sale.creator = address(0) {
+            revert TokenNotListed();
+        }
+
         TokenSale memory sale = tokenToSale[_token];
 
         if (sale.isOpen != true) {
@@ -143,8 +149,11 @@ contract FactoryContract {
     }
 
     function WithdrawToken(uint256 _amount) public onlyOwner nonReentrant {
+        if (address(this).balance < _amount) {
+            revert InsufficientContractBalance();
+
         (bool success, ) = payable(owner).call{value: _amount}("");
-        require(success, "ETH transfer failed");
+        require(success, "Failed to transfer ETH to creator");
     }
 
     function getTokenSale(
