@@ -35,6 +35,7 @@ contract FactoryContract {
 
     event Created(address indexed token);
     event Buy(address indexed token, uint256 amount);
+    event TokenListed(address indexed token, string name, string description, address indexed owner);
 
     modifier onlyOwner() {
         if (msg.sender != owner) {
@@ -42,6 +43,15 @@ contract FactoryContract {
         }
         _;
     }
+
+    modifier nonReentrant {
+        require(!locked, "Reentrancy attempt");
+        locked = true;
+        _;
+        
+        locked = false;
+    }
+
     constructor(uint256 _listingFee) {
         listingFee = _listingFee;
         owner = msg.sender;
@@ -53,11 +63,11 @@ contract FactoryContract {
         string memory _description
     ) public payable {
 
-        if (msg.value >= 0) {
+        if (msg.value <= 0) {
             revert ListingFeerequired();
         }
         //Allow creation of tokens through token instanciation
-        Token token = new Token(msg.sender, _name, _symbol, 1_000_000 ether);
+        Token token = new Token(_name, _symbol, 1_000_000 ether);
 
         tokens.push(address(token)); //pushing each created tokens in an array for saving.
 
@@ -77,9 +87,10 @@ contract FactoryContract {
         tokenToSale[address(token)] = sale;
 
         emit Created(address(token));
+        emit TokenListed(address(token), _name, _description, OWNER);
     }
 
-    function buyToken(address _token, uint256 _amount) external payable {
+    function buyToken(address _token, uint256 _amount) external payable nonReentrant {
         // require(msg.value >= _amount, "Insufficient funds");
         TokenSale storage sale = tokenToSale[_token];
 
@@ -97,7 +108,7 @@ contract FactoryContract {
 
         uint256 cost = getCostPrice(sale.sold);
 
-        uint256 price = cost * (_amount / 10 ** 10);
+        uint256 price = cost * (_amount / (10 ** 18));
 
         if (msg.value < price) {
             revert InsufficientFunds();
@@ -115,8 +126,8 @@ contract FactoryContract {
         emit Buy(_token, _amount);
     }
 
-    function DepositToken(address _token, string memory _name, string memory _symbol) public {
-        Token token = new Token(msg.sender, _name, _symbol, 1_000_000 ether);
+    function DepositToken(address _token, string memory _name, string memory _symbol) public nonReentrant {
+        Token token = new Token(_name, _symbol, 1_000_000 ether);
         TokenSale memory sale = tokenToSale[_token];
 
         if (sale.isOpen != true) {
@@ -129,7 +140,7 @@ contract FactoryContract {
         require(success, "ETH transfer failed");
     }
 
-    function WithdrawToken(uint256 _amount) public onlyOwner {
+    function WithdrawToken(uint256 _amount) public onlyOwner nonReentrant {
         (bool success, ) = payable(owner).call{value: _amount}("");
         require(success, "ETH transfer failed");
     }
