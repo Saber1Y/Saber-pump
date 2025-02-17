@@ -23,7 +23,7 @@ contract FactoryContract {
     uint256 public totalTokens;
     mapping(address => TokenSale) public tokenToSale;
 
-    bool transient locked;
+    bool private locked;
 
     struct TokenSale {
         address token;
