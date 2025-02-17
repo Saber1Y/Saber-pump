@@ -3,7 +3,7 @@ pragma solidity 0.8.27;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-error TotalSupplyIsBelowOneEther();
+error TotalSupplyisTooLow();
 
 contract Token is ERC20 {
     address payable public immutable OWNER;
@@ -17,8 +17,8 @@ contract Token is ERC20 {
         // @param: _symbol is the symbol of the token
         // @param: _totalSupply is the total supply of the token
         
-        if (_totalSupply < 1 ether) {
-            revert TotalSupplyIsBelowOneEther();
+        if (_totalSupply < 1e18) {
+            revert TotalSupplyisTooLow();
         }
         
         OWNER = payable(msg.sender);
