@@ -132,10 +132,7 @@ contract FactoryContract {
 
     function DepositToken(address _token, string memory _name, string memory _symbol) public nonReentrant {
         Token token = new Token(_name, _symbol, 1_000_000 ether);
-        if (sale.creator = address(0) {
-            revert TokenNotListed();
-        }
-
+    
         TokenSale memory sale = tokenToSale[_token];
 
         if (sale.isOpen != true) {
@@ -151,6 +148,7 @@ contract FactoryContract {
     function WithdrawToken(uint256 _amount) public onlyOwner nonReentrant {
         if (address(this).balance < _amount) {
             revert InsufficientContractBalance();
+        }
 
         (bool success, ) = payable(owner).call{value: _amount}("");
         require(success, "Failed to transfer ETH to creator");
