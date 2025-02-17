@@ -23,6 +23,8 @@ contract FactoryContract {
     uint256 public totalTokens;
     mapping(address => TokenSale) public tokenToSale;
 
+    bool transient locked;
+
     struct TokenSale {
         address token;
         string name;
@@ -87,7 +89,7 @@ contract FactoryContract {
         tokenToSale[address(token)] = sale;
 
         emit Created(address(token));
-        emit TokenListed(address(token), _name, _description, OWNER);
+        emit TokenListed(address(token), _name, _description, owner);
     }
 
     function buyToken(address _token, uint256 _amount) external payable nonReentrant {
