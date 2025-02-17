@@ -39,6 +39,7 @@ contract FactoryContract {
 
     event Created(address indexed token);
     event Buy(address indexed token, uint256 amount);
+    event SaleClosed(address indexed_token);
     event TokenListed(address indexed token, string name, string description, address indexed owner);
 
     modifier onlyOwner() {
@@ -128,6 +129,7 @@ contract FactoryContract {
         Token(_token).transfer(msg.sender, _amount);
 
         emit Buy(_token, _amount);
+        emit SaleClosed(_token);
     }
 
     function DepositToken(address _token, string memory _name, string memory _symbol) public nonReentrant {
