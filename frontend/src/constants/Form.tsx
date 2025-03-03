@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { formatEther } from "ethers";
 import { useWriteContract, useReadContract, useAccount } from "wagmi";
 import { isAddress } from "viem";
 
@@ -18,7 +19,7 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
   const [showMore, setShowMore] = useState(false);
   const [telegram, setTelegram] = useState("");
   const [website, setWebsite] = useState("");
-  const [creator, setCreator] = useState("");
+  // const [creator, setCreator] = useState("");
   const [submittedData, setSubmittedData] = useState<any[]>([]);
 
   const { isConnected } = useAccount();
@@ -32,16 +33,35 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
     setShowMore(false);
     setTelegram("");
     setWebsite("");
-    setCreator("");
   };
 
-  // const [data, refetch] = useReadContract({
-  //   address: ContractAddress,
-  //   abi,
-  //   functionName: owner,
-  // })
+  // const index = 0;
 
+  // const { data: creator } = useReadContract({
+  //   address:ContractAddress,
+  //   abi: abi,
+  //   functionName: "getTokenCreator",
+  //   // args: [index],
+  // });
+
+  // const { data: cost } = useReadContract({
+  //   address: ContractAddress,
+  //   abi: abi,
+  //   functionName: "getCostPrice",
+  // });
+
+  const { data: listingFee } = useReadContract<
+    typeof abi,
+    "listingFee",
+    [],
+    bigint
+  >({
+    address: ContractAddress,
+    abi: abi,
+    functionName: "listingFee",
+  });
   const { writeContractAsync: createToken } = useWriteContract();
+  const { writeContract, isPending, isSuccess, error } = useWriteContract();
 
   useEffect(() => {
     const storedData = sessionStorage.getItem("submittedData");
@@ -78,7 +98,7 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
       );
 
       const result = await response.json();
-      const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`; 
+      const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`;
       console.log("IPFS URL:", ipfsUrl);
       setUploadURL(ipfsUrl);
     } catch (error) {
@@ -126,11 +146,25 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
     sessionStorage.setItem("submittedData", JSON.stringify(updatedData));
 
     setName("");
-   setSymbol("");
+    setSymbol("");
     setDescription("");
     setTelegram("");
     setWebsite("");
-    setUploadURL(""); 
+    setUploadURL("");
+  };
+
+  const handleCloseSale = async () => {
+    try {
+      writeContract({
+        address: ContractAddress, // Factory Contract
+        abi,
+        functionName: "closeSale",
+        args: [ContractAddress], // Pass the token address as an argument
+      });
+      console.log("fetching close sale");
+    } catch (err) {
+      console.error("Close sale failed:", err);
+    }
   };
 
   return (
@@ -146,6 +180,10 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
         }}
       >
         [ Create a Token ]
+        <p>
+          Listing Fee: {listingFee ? formatEther(listingFee) : "Loading..."} ETH
+        </p>
+        {/* <p>Token Creator: {creator}</p> */}
       </button>
 
       {showForm && (
@@ -179,7 +217,7 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
 
             <form
               onSubmit={handleCreateToken}
-              className="flex flex-col space-y-4 text-black"          
+              className="flex flex-col space-y-4 text-black"
             >
               <input
                 type="text"
@@ -265,19 +303,44 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
           {submittedData.map((token, index) => (
             <div
               key={index}
-              className="p-4 border rounded-lg shadow-sm text-left"
+              className="p-4 flex flex-col border rounded-lg shadow-sm text-left"
             >
-              <p className="text-2xl  uppercase font-semibold">
-               {token.name}
-              </p>
-              <p>
+              <div className="flex items-center justify-between pb-3 border-b">
+                <p className="text-2xl  uppercase font-semibold">
+                  {token.name}
+                </p>
+                <button
+                  onClick={handleCloseSale}
+                  disabled={isPending}
+                  className="text-gray-500 hover:bg-gray-200 rounded-full p-2"
+                >
+                  {isPending ? (
+                    "Closing..."
+                  ) : (
+                    <svg
+                      className="w-5 h-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              <p className="text-lg font-bold leading-3 py-4">
                 <strong>Symbol:</strong> {token.symbol}
               </p>
-              <p>
+              <p className="text-lg font-bold leading-6 py-3">
                 <strong>Description:</strong> {token.description}
               </p>
-              <p>Creator </p> {token.creator}
-
+              <p>Creator </p>
               {token.image && (
                 <img
                   src={token.image}
