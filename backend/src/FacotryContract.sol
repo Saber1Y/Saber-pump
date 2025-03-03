@@ -59,6 +59,7 @@ contract FactoryContract {
         string memory _description,
         string memory _image
     ) public payable {
+        
         if (msg.value < listingFee) {
             revert ListingFeerequired();
         }

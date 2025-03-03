@@ -18,6 +18,7 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
   const [showMore, setShowMore] = useState(false);
   const [telegram, setTelegram] = useState("");
   const [website, setWebsite] = useState("");
+  const [creator, setCreator] = useState("");
   const [submittedData, setSubmittedData] = useState<any[]>([]);
 
   const { isConnected } = useAccount();
@@ -31,12 +32,13 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
     setShowMore(false);
     setTelegram("");
     setWebsite("");
+    setCreator("");
   };
 
   // const [data, refetch] = useReadContract({
   //   address: ContractAddress,
   //   abi,
-  //   functionName:
+  //   functionName: owner,
   // })
 
   const { writeContractAsync: createToken } = useWriteContract();
@@ -124,11 +126,11 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
     sessionStorage.setItem("submittedData", JSON.stringify(updatedData));
 
     setName("");
-    setSymbol("");
+   setSymbol("");
     setDescription("");
     setTelegram("");
     setWebsite("");
-    setUploadURL("");
+    setUploadURL(""); 
   };
 
   return (
@@ -177,7 +179,7 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
 
             <form
               onSubmit={handleCreateToken}
-              className="flex flex-col space-y-4 text-black"
+              className="flex flex-col space-y-4 text-black"          
             >
               <input
                 type="text"
@@ -191,7 +193,7 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
                 type="text"
                 value={symbol}
                 onChange={(e) => setSymbol(e.target.value)}
-                placeholder="Symbol"
+                placeholder="Ticker"
                 required
                 className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -265,8 +267,8 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
               key={index}
               className="p-4 border rounded-lg shadow-sm text-left"
             >
-              <p>
-                <strong>Name:</strong> {token.name}
+              <p className="text-2xl  uppercase font-semibold">
+               {token.name}
               </p>
               <p>
                 <strong>Symbol:</strong> {token.symbol}
@@ -275,6 +277,7 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
                 <strong>Description:</strong> {token.description}
               </p>
               <p>Creator </p> {token.creator}
+
               {token.image && (
                 <img
                   src={token.image}
