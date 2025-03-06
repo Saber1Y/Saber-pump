@@ -35,8 +35,6 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
     setWebsite("");
   };
 
-  // const index = 0;
-
   // const { data: creator } = useReadContract({
   //   address:ContractAddress,
   //   abi: abi,
@@ -50,16 +48,8 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
   //   functionName: "getCostPrice",
   // });
 
-  const { data: listingFee } = useReadContract<
-    typeof abi,
-    "listingFee",
-    [],
-    bigint
-  >({
-    address: ContractAddress,
-    abi: abi,
-    functionName: "listingFee",
-  });
+
+
   const { writeContractAsync: createToken } = useWriteContract();
   const { writeContract, isPending, isSuccess, error } = useWriteContract();
 
@@ -156,10 +146,10 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
   const handleCloseSale = async () => {
     try {
       writeContract({
-        address: ContractAddress, // Factory Contract
+        address: ContractAddress,
         abi,
         functionName: "closeSale",
-        args: [ContractAddress], // Pass the token address as an argument
+        args: [ContractAddress],
       });
       console.log("fetching close sale");
     } catch (err) {
@@ -180,9 +170,7 @@ const Form: React.FC<FormProps> = ({ ContractAddress, abi }) => {
         }}
       >
         [ Create a Token ]
-        <p>
-          Listing Fee: {listingFee ? formatEther(listingFee) : "Loading..."} ETH
-        </p>
+  
         {/* <p>Token Creator: {creator}</p> */}
       </button>
 
